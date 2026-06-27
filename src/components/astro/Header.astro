@@ -1,0 +1,85 @@
+---
+import { listSpeakers } from '../../lib/store';
+const hasSpeakers = listSpeakers().length > 0;
+const nav = [
+  { href: '/#about', label: 'Haqida' },
+  { href: '/#venue', label: 'Venue' },
+  ...(hasSpeakers ? [{ href: '/#speakers', label: 'Spikerlar' }] : []),
+  { href: '/#sovgalar', label: "Sovg'alar" },
+  { href: '/#partners', label: 'Hamkorlar' },
+  { href: '/#tarifi', label: 'Tariflar' },
+  { href: '/#faq', label: 'FAQ' },
+  { href: '/bilet', label: 'Chiptam' },
+];
+---
+{/* Desktop top header */}
+<header class="fixed top-0 inset-x-0 z-50 bg-bg/90 backdrop-blur-md border-b border-rule hidden lg:block">
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-12 h-16 flex items-center justify-between gap-6">
+    <a href="/" class="flex items-center gap-3 group">
+      <img src="/ai-fest-logo.svg" alt="AI FEST" class="w-9 h-9 block rounded-full" />
+      <span class="font-display font-black text-sm tracking-tightest uppercase"><span class="gold-gradient">AI FEST</span> <span class="text-ink-3 font-mono font-semibold text-[11px] tracking-[0.18em] ml-1">'26</span></span>
+    </a>
+    <nav class="hidden lg:flex gap-5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2">
+      {nav.map(n => <a href={n.href} class="hover:text-gold transition-colors">{n.label}</a>)}
+    </nav>
+    <a href="/#tarif-standard" class="js-goto-standard cta-pulse bg-gold text-bg px-5 py-2.5 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-gold-bright transition">
+      Joy band qilish →
+    </a>
+  </div>
+</header>
+
+{/* Mobile top header — visible at page top, hides on scroll down */}
+<header id="mobile-top-bar" class="fixed top-0 inset-x-0 z-50 bg-bg/95 backdrop-blur-md border-b border-rule lg:hidden translate-y-0 transition-transform duration-300 will-change-transform">
+  <div class="px-4 h-14 flex items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2.5">
+      <img src="/ai-fest-logo.svg" alt="AI FEST" class="w-8 h-8 block rounded-full" />
+      <span class="font-display font-black text-xs tracking-tightest uppercase leading-tight"><span class="gold-gradient">AI FEST</span><span class="text-ink-3 font-mono font-semibold text-[10px] tracking-[0.18em] ml-1">'26</span></span>
+    </a>
+    <a href="/#tarif-standard" class="js-goto-standard cta-pulse bg-gold text-bg px-3.5 py-2 font-mono font-semibold text-[10px] uppercase tracking-[0.18em] hover:bg-gold-bright transition">
+      Joy band qilish →
+    </a>
+  </div>
+</header>
+
+{/* Mobile bottom action bar — scroll-revealed, hides near bottom of page */}
+<div id="mobile-cta-bar" class="fixed bottom-0 inset-x-0 z-50 bg-bg/95 backdrop-blur-md border-t border-rule lg:hidden translate-y-full transition-transform duration-300 will-change-transform">
+  <div class="px-4 h-16 flex items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2.5">
+      <img src="/ai-fest-logo.svg" alt="AI FEST" class="w-9 h-9 block rounded-full" />
+      <span class="font-display font-black text-xs tracking-tightest uppercase leading-tight"><span class="gold-gradient">AI FEST</span><span class="text-ink-3 font-mono font-semibold text-[10px] tracking-[0.18em] ml-1">'26</span></span>
+    </a>
+    <a href="/#tarif-standard" class="js-goto-standard cta-pulse bg-gold text-bg px-4 py-2.5 font-mono font-semibold text-[10px] uppercase tracking-[0.18em] hover:bg-gold-bright transition">
+      Joy band qilish →
+    </a>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const top = document.getElementById('mobile-top-bar');
+    const bottom = document.getElementById('mobile-cta-bar');
+    if (!top || !bottom) return;
+    let topShown = true;
+    let bottomShown = false;
+    const TOP_HIDE_AFTER = 120;
+    const BOTTOM_SHOW_AFTER = 480;
+    const update = () => {
+      const y = window.scrollY;
+      const doc = document.documentElement;
+      const nearBottom = (window.innerHeight + y) >= (doc.scrollHeight - 220);
+      const showTop = y < TOP_HIDE_AFTER;
+      const showBottom = y > BOTTOM_SHOW_AFTER && !nearBottom;
+      if (showTop !== topShown) {
+        topShown = showTop;
+        top.style.transform = showTop ? 'translateY(0)' : 'translateY(-100%)';
+      }
+      if (showBottom !== bottomShown) {
+        bottomShown = showBottom;
+        bottom.style.transform = showBottom ? 'translateY(0)' : 'translateY(100%)';
+      }
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+</script>

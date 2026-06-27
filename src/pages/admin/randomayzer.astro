@@ -1,0 +1,209 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { eligibleTickets, listDraws } from '../../lib/store';
+
+const won = new Set(listDraws().map((d) => d.ticket_number));
+const pool = eligibleTickets().filter((t) => !won.has(t.ticket_number));
+const counts = {
+  free: pool.filter((t) => t.tariff_key === 'free').length,
+  standard: pool.filter((t) => t.tariff_key === 'standard').length,
+  vip: pool.filter((t) => t.tariff_key === 'vip').length,
+};
+const recent = listDraws().slice(0, 8);
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const short = (tn: string) => '#' + tn.slice(-4);
+---
+<AdminLayout title="Randomayzer" active="randomayzer">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Tasodifiy g‘olibni aniqlash</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 32px;">To‘langan chiptalar orasidan sovg‘a g‘olibini tasodifiy tanlash protokoli.</p>
+
+  <div style="display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start;" class="rz-grid">
+    <!-- left: filter + eligible + recent -->
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <div class="card" style="padding:24px;">
+        <div class="caps" style="margin-bottom:20px;">Filter Matrix</div>
+        <div class="caps" style="color:#555; margin-bottom:12px;">Tariflar</div>
+        <label style="display:flex; align-items:center; gap:10px; margin-bottom:12px; cursor:pointer; font-size:13px; color:#e2e2e2;"><input type="checkbox" class="rz-tar" value="free" checked style="width:16px; height:16px; accent-color:#fff;" /> BEPUL <span style="color:#555; margin-left:auto;" data-c="free">{counts.free}</span></label>
+        <label style="display:flex; align-items:center; gap:10px; margin-bottom:12px; cursor:pointer; font-size:13px; color:#e2e2e2;"><input type="checkbox" class="rz-tar" value="standard" checked style="width:16px; height:16px; accent-color:#fff;" /> STANDARD <span style="color:#555; margin-left:auto;" data-c="standard">{counts.standard}</span></label>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:#e2e2e2;"><input type="checkbox" class="rz-tar" value="vip" checked style="width:16px; height:16px; accent-color:#fff;" /> VIP <span style="color:#555; margin-left:auto;" data-c="vip">{counts.vip}</span></label>
+        <div style="border-top:1px solid #262626; margin-top:22px; padding-top:22px;">
+          <div class="caps" style="color:#A1A1A1; margin-bottom:10px;">Eligible Leads</div>
+          <div id="rz-count" class="adm-h" style="font-size:44px; font-weight:800; letter-spacing:-0.04em; line-height:1; color:#fff;">{fmt(pool.length)}</div>
+          <div class="caps" style="color:#555; margin-top:8px;">Ready for extraction</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;">
+        <div style="padding:16px 20px; border-bottom:1px solid #262626; display:flex; align-items:center; justify-content:space-between;" class="caps">
+          <span>Recent Extractions</span>
+          <form method="POST" action="/api/admin/draws-reset" style="margin:0;" onsubmit="return confirm('Barcha g‘oliblar tarixi tozalansinmi? Hamma qaytadan eligible bo‘ladi.')">
+            <button class="caps" title="G‘oliblar tarixini tozalash" style="background:none; border:1px solid #FF3B30; color:#FF3B30; padding:3px 9px; cursor:pointer; font-family:'JetBrains Mono',monospace;">Tozalash</button>
+          </form>
+        </div>
+        <ul id="rz-recent" style="list-style:none; margin:0; padding:0;">
+          {recent.length === 0 && (<li style="padding:24px 20px; color:#555; font-size:12px; text-align:center;">Hozircha g‘olib yo‘q.</li>)}
+          {recent.map((d) => (
+            <li style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid #1b1b1b;">
+              <div><div style="color:#fff; font-size:13px; font-weight:600;">{short(d.ticket_number)}</div><div style="color:#555; font-size:11px;">{d.holder}</div></div>
+              <span class="caps" style="border:1px solid #262626; color:#A1A1A1; padding:2px 6px;">{d.tariff_key.slice(0,3)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- right: stage -->
+    <div class="card" style="display:flex; flex-direction:column; padding:0; min-height:520px;">
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px;">
+        <input id="rz-prize" type="text" placeholder="Sovg‘a nomi (ixtiyoriy) — masalan: Noutbuk #1" style="max-width:360px; text-align:center; margin-bottom:32px; background:transparent; border:none; border-bottom:1px solid #262626; color:#A1A1A1;" />
+        <div id="rz-display" style="border:1px solid #fff; padding:36px 28px; width:100%; max-width:560px; text-align:center;">
+          <div id="rz-tkt" class="adm-h" style="font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-0.03em; color:#fff; line-height:1.05;">#TKT-???? // PRESS START</div>
+          <div id="rz-holder" style="color:#A1A1A1; font-size:14px; margin-top:14px; min-height:18px;"></div>
+        </div>
+        <button id="rz-go" class="btn btn-primary" style="margin-top:32px; padding:16px 48px; font-size:13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg> ANIQLASH
+        </button>
+      </div>
+      <div style="border-top:1px solid #262626; padding:14px 24px; display:flex; justify-content:space-between;" class="caps">
+        <span id="rz-status" style="color:#A1A1A1;">● System Ready</span>
+        <span style="color:#555;">SEQ: ECF-2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- winner modal -->
+  <div id="rz-modal" style="display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.9); align-items:center; justify-content:center; padding:20px;">
+    <div style="border:1px solid #fff; background:#0e0e0e; padding:44px 40px; max-width:520px; width:100%; text-align:center;">
+      <div class="caps" style="color:#A1A1A1; margin-bottom:18px; letter-spacing:0.22em;">🎉 G‘OLIB ANIQLANDI</div>
+      <div id="rzm-tkt" class="adm-h" style="font-size:54px; font-weight:800; letter-spacing:-0.03em; color:#fff; line-height:1;">#000000</div>
+      <div id="rzm-name" style="color:#fff; font-size:24px; font-weight:700; margin-top:14px;"></div>
+      <div id="rzm-tarif" class="caps" style="color:#A1A1A1; margin-top:6px;"></div>
+      <div id="rzm-msg" style="color:#e2e2e2; font-size:17px; margin-top:22px; line-height:1.5;"></div>
+      <button id="rzm-close" class="btn btn-primary" style="margin-top:30px; padding:14px 44px;">Yopish</button>
+    </div>
+  </div>
+
+  <style>@media (max-width:860px){ .rz-grid{ grid-template-columns:1fr !important; } }</style>
+
+  <script is:inline define:vars={{ rzCounts: counts }}>
+    (function () {
+      const counts = Object.assign({ free: 0, standard: 0, vip: 0 }, rzCounts);
+      const tarBoxes = () => Array.from(document.querySelectorAll('.rz-tar'));
+      const selected = () => tarBoxes().filter((b) => b.checked).map((b) => b.value);
+      const countEl = document.getElementById('rz-count');
+      function refreshCount() {
+        const n = selected().reduce((s, k) => s + (counts[k] || 0), 0);
+        countEl.textContent = new Intl.NumberFormat('uz-UZ').format(n);
+      }
+      tarBoxes().forEach((b) => b.addEventListener('change', refreshCount));
+
+      const go = document.getElementById('rz-go');
+      const tkt = document.getElementById('rz-tkt');
+      const holder = document.getElementById('rz-holder');
+      const statusEl = document.getElementById('rz-status');
+      const recentUl = document.getElementById('rz-recent');
+      const modal = document.getElementById('rz-modal');
+      let rolling = false;
+
+      const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+      const rnd = () => '#' + String(Math.floor(Math.random() * 900000 + 100000));
+
+      // celebratory confetti shot from the two bottom corners
+      function confetti() {
+        const cv = document.createElement('canvas');
+        cv.style.cssText = 'position:fixed; inset:0; z-index:300; pointer-events:none;';
+        cv.width = window.innerWidth; cv.height = window.innerHeight;
+        document.body.appendChild(cv);
+        const ctx = cv.getContext('2d');
+        const cols = ['#ffffff', '#FF3B30', '#ffd700', '#4ade80', '#60a5fa', '#c084fc'];
+        const P = [];
+        for (let i = 0; i < 200; i++) {
+          const left = i % 2 === 0;
+          P.push({ x: left ? 0 : cv.width, y: cv.height, vx: (left ? 1 : -1) * (5 + Math.random() * 9), vy: -(12 + Math.random() * 10), g: 0.22, s: 5 + Math.random() * 7, c: cols[i % cols.length], r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5 });
+        }
+        let f = 0;
+        (function loop() {
+          ctx.clearRect(0, 0, cv.width, cv.height);
+          let alive = 0;
+          for (const p of P) {
+            p.vy += p.g; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+            if (p.y < cv.height + 60) alive++;
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+          }
+          f++;
+          if (alive > 0 && f < 300) requestAnimationFrame(loop); else cv.remove();
+        })();
+      }
+
+      function showModal(w) {
+        document.getElementById('rzm-tkt').textContent = '#' + w.ticket_number.slice(-6);
+        document.getElementById('rzm-name').textContent = w.holder || '';
+        document.getElementById('rzm-tarif').textContent = (w.tariff_key || '').toUpperCase();
+        const prize = (w.prize || '').trim();
+        document.getElementById('rzm-msg').innerHTML = prize
+          ? 'Tabriklaymiz! 🎁<br>Siz <b style="color:#fff;">' + esc(prize) + '</b> sovg‘asini yutdingiz!'
+          : 'Tabriklaymiz! 🎉<br>Siz <b style="color:#fff;">yutdingiz!</b>';
+        modal.style.display = 'flex';
+        confetti();
+      }
+      document.getElementById('rzm-close').addEventListener('click', () => { modal.style.display = 'none'; });
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+      go.addEventListener('click', async () => {
+        if (rolling) return;
+        const tariffs = selected();
+        if (!tariffs.length) { statusEl.textContent = '● Tarif tanlang'; return; }
+        rolling = true; go.disabled = true; holder.textContent = '';
+        statusEl.textContent = '● Aylanmoqda…';
+
+        // decelerating slot-machine spin
+        const start = Date.now();
+        const SPIN = 3800;
+        let spinning = true, timer = null;
+        (function spin() {
+          if (!spinning) return;
+          tkt.textContent = rnd();
+          const prog = Math.min((Date.now() - start) / SPIN, 1);
+          const delay = 40 + prog * prog * 360; // ease-out (slows down toward the end)
+          timer = setTimeout(spin, delay);
+        })();
+
+        let data = null;
+        try {
+          const r = await fetch('/api/admin/draw', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tariffs, prize: (document.getElementById('rz-prize').value || '').trim() }),
+          });
+          data = await r.json();
+        } catch (e) { data = { ok: false, error: 'Tarmoq xatosi' }; }
+
+        // let the full spin play out for drama, even if the API replied early
+        await new Promise((res) => setTimeout(res, Math.max(0, SPIN - (Date.now() - start))));
+        spinning = false; if (timer) clearTimeout(timer);
+        rolling = false; go.disabled = false;
+
+        if (!data || !data.ok) {
+          tkt.textContent = '#TKT-???? // ' + ((data && data.error) || 'XATO');
+          statusEl.textContent = '● ' + ((data && data.error) || 'Xato');
+          return;
+        }
+        const w = data.winner;
+        tkt.textContent = '#' + w.ticket_number.slice(-6);
+        holder.textContent = w.holder + ' · ' + w.tariff_key.toUpperCase() + (w.prize ? ' · ' + w.prize : '');
+        statusEl.textContent = '● G‘olib aniqlandi';
+        showModal(w);
+
+        // prepend to recent (capped at 8 so the column never grows)
+        const li = document.createElement('li');
+        li.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1b1b1b;background:#151515;';
+        li.innerHTML = '<div><div style="color:#fff;font-size:13px;font-weight:600;">#' + w.ticket_number.slice(-4) + '</div><div style="color:#555;font-size:11px;">' + esc(w.holder) + '</div></div><span class="caps" style="border:1px solid #fff;color:#fff;padding:2px 6px;">' + esc(w.tariff_key.slice(0, 3)) + '</span>';
+        if (recentUl.firstChild && recentUl.firstChild.textContent && recentUl.firstChild.textContent.indexOf('yo‘q') >= 0) recentUl.innerHTML = '';
+        recentUl.insertBefore(li, recentUl.firstChild);
+        while (recentUl.children.length > 8) recentUl.removeChild(recentUl.lastChild);
+        if (counts[w.tariff_key] > 0) counts[w.tariff_key] -= 1;
+        refreshCount();
+      });
+    })();
+  </script>
+</AdminLayout>

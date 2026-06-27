@@ -1,0 +1,41 @@
+---
+export const prerender = false;
+const err = Astro.url.searchParams.get('e');
+---
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Kirish — AI FEST Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; }
+      body { margin:0; background:#0e0e0e; color:#e2e2e2; font-family:'JetBrains Mono',monospace; display:grid; place-items:center; min-height:100vh; }
+      .box { width:min(92vw, 380px); border:1px solid #262626; padding:40px 32px; }
+      .caps { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#A1A1A1; }
+      h1 { font-family:'Hanken Grotesk',sans-serif; font-weight:800; font-size:28px; letter-spacing:-0.03em; margin:14px 0 6px; color:#fff; }
+      input { width:100%; background:#0e0e0e; border:1px solid #262626; color:#fff; font-family:'JetBrains Mono',monospace; font-size:15px; padding:12px; margin-top:8px; }
+      input:focus { outline:none; border-color:#fff; }
+      button { width:100%; margin-top:20px; background:#fff; color:#0e0e0e; border:none; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:14px; cursor:pointer; }
+      button:hover { background:#c6c6c7; }
+      .err { border-left:2px solid #FF3B30; color:#FF3B30; font-size:12px; padding:8px 12px; margin-top:16px; }
+      .lbl { display:block; margin-top:18px; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="caps">AI FEST '26 · ADMIN</div>
+      <h1>Kirish</h1>
+      <p class="caps" style="color:#555; letter-spacing:0; text-transform:none; font-size:12px;">Boshqaruv terminaliga kirish uchun parol.</p>
+      <form method="POST" action="/api/admin/login">
+        <label class="lbl caps">Parol</label>
+        <input type="password" name="password" autocomplete="current-password" required autofocus placeholder="••••••••" />
+        <button type="submit">Kirish →</button>
+      </form>
+      {err && <div class="err">Parol noto‘g‘ri.</div>}
+    </div>
+  </body>
+</html>

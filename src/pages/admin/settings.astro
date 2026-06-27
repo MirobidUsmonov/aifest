@@ -1,0 +1,39 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getTariffs } from '../../lib/store';
+
+const tariffs = getTariffs();
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const saved = Astro.url.searchParams.get('ok') === '1';
+---
+<AdminLayout title="Settings" active="settings">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Sozlamalar</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 28px;">Tariflar narxi va imkoniyatlarini tahrirlang. O‘zgarish saytda va to‘lovda darhol kuchga kiradi.</p>
+  {saved && <div style="border-left:2px solid #fff; background:#151515; color:#fff; padding:10px 16px; margin-bottom:24px; font-size:13px;">✓ Saqlandi.</div>}
+
+  <div class="caps" style="color:#A1A1A1; margin-bottom:14px;">Tariflar — narx va imkoniyatlar</div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px;">
+    {tariffs.map((t) => (
+      <form method="POST" action="/api/admin/tariff" class="card" style="padding:22px; display:flex; flex-direction:column; gap:14px;">
+        <input type="hidden" name="key" value={t.key} />
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="adm-h" style="font-size:20px; font-weight:800; color:#fff;">{t.label}</div>
+        </div>
+        <div>
+          <label class="caps" style="display:block; margin-bottom:6px;">Narx (so‘m)</label>
+          <input type="number" name="price" value={t.price} min="0" step="1000" />
+        </div>
+        <div>
+          <label class="caps" style="display:block; margin-bottom:6px;">Nom (ko‘rinadigan)</label>
+          <input type="text" name="label" value={t.label} maxlength="40" />
+        </div>
+        <div>
+          <label class="caps" style="display:block; margin-bottom:6px;">Imkoniyatlar (har qator — bitta)</label>
+          <textarea name="perks" rows={Math.max(4, t.perks.length + 1)} style="width:100%; background:#0e0e0e; border:1px solid #262626; color:#e2e2e2; font-family:'JetBrains Mono',monospace; font-size:13px; padding:10px; resize:vertical;">{t.perks.join('\n')}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Saqlash → {t.price === 0 ? 'BEPUL' : fmt(t.price) + ' so‘m'}</button>
+      </form>
+    ))}
+  </div>
+</AdminLayout>

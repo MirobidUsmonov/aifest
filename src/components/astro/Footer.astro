@@ -1,0 +1,45 @@
+---
+import EcomStamp from './EcomStamp.astro';
+import MonoLabel from './MonoLabel.astro';
+const phones = ['+998 33 150 30 50', '+998 77 045 45 47'];
+---
+<footer class="relative bg-bg text-ink border-t border-rule overflow-hidden">
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-12 py-20 grid md:grid-cols-12 gap-10">
+    <div class="md:col-span-5 relative">
+      <div class="flex items-center gap-4 mb-6">
+        <img src="/ai-fest-logo.svg" alt="AI FEST" class="w-16 h-16 block rounded-full" />
+        <div class="font-display font-black text-3xl md:text-4xl tracking-tightest uppercase leading-none"><span class="gold-gradient">AI<br/>Fest</span> '26</div>
+      </div>
+      <p class="text-ink-2 text-sm max-w-sm leading-relaxed">O'zbekistondagi eng yirik sun'iy intellekt va avtomatlashtirish festivali. 23-iyun 2026, Toshkent. Azimut Grand Hotel · Bodomzor metro.</p>
+      <div class="hidden md:block absolute -bottom-32 -left-20 opacity-[0.07] pointer-events-none">
+        <EcomStamp size="xl" center="AI" arcTop="AI FEST '26" arcBottom="SUN'IY INTELLEKT" rotate={true} />
+      </div>
+    </div>
+    <div class="md:col-span-2">
+      <MonoLabel size="xs"><span class="block mb-4">Aloqa</span></MonoLabel>
+      <ul class="space-y-2 text-sm text-ink tabular">{phones.map(p => <li>{p}</li>)}</ul>
+    </div>
+    <div class="md:col-span-2">
+      <MonoLabel size="xs"><span class="block mb-4">Ijtimoiy</span></MonoLabel>
+      <ul class="space-y-2 text-sm">
+        <li><a href="https://t.me/aifestuz" class="text-ink hover:text-gold transition-colors">Telegram</a></li>
+        <li><a href="https://instagram.com/aifest.uz" class="text-ink hover:text-gold transition-colors">Instagram</a></li>
+        <li><a href="https://wa.me/998331503050" class="text-ink hover:text-gold transition-colors">WhatsApp</a></li>
+      </ul>
+    </div>
+    <div class="md:col-span-3">
+      <MonoLabel size="xs"><span class="block mb-4">Yuridik</span></MonoLabel>
+      <ul class="space-y-2 text-sm text-ink">
+        <li><a href="/bilet" class="hover:text-gold">Chiptani topish</a></li>
+        <li><a href="/shartlar" class="hover:text-gold">Oferta</a></li>
+        <li><a href="/maxfiylik" class="hover:text-gold">Maxfiylik siyosati</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-rule">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12 py-5 flex flex-wrap gap-4 justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-ink-3">
+      <span>© 2026 / AI FEST UZBEKISTAN</span>
+      <span class="tabular">23.06.2026 / TASHKENT / AI FEST '26</span>
+    </div>
+  </div>
+</footer>

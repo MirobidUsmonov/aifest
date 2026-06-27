@@ -1,0 +1,27 @@
+[
+  {
+    "id": "free",
+    "name": "KO'RGAZMA",
+    "price": 0,
+    "currency": "UZS",
+    "subtitle": "Tashrif",
+    "perks": ["Ko'rgazmaga tashrif buyurish", "Network qilish imkoniyati"]
+  },
+  {
+    "id": "standard",
+    "name": "KONFERENSIYA",
+    "price": 200000,
+    "currency": "UZS",
+    "subtitle": "Eng mashhur",
+    "popular": true,
+    "perks": ["Maxsus 500 kishilik konferensiya zaliga kirish", "Barcha ma'ruzalar", "2ta Xitoyga yo'llanma va 20ta noutbuk sovg'a tanlovida ishtirok etish", "Foto hisobot"]
+  },
+  {
+    "id": "vip",
+    "name": "VIP",
+    "price": 800000,
+    "currency": "UZS",
+    "subtitle": "Premium tajriba",
+    "perks": ["2, 3, 4-qatorlardan joy", "Maxsus VIP sovg'a", "2ta Xitoyga yo'llanma va 20ta noutbuk sovg'a tanlovida ishtirok", "Spikerlar bilan uchrashuv", "Foto va video hisobot", "Networking imkoniyati"]
+  }
+]

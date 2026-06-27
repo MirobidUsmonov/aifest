@@ -1,0 +1,315 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/astro/Header.astro';
+import Footer from '../components/astro/Footer.astro';
+import RegisterForm from '../components/react/RegisterForm';
+import Countdown from '../components/react/Countdown';
+import { getTariffs, listSpeakers } from '../lib/store';
+import faq from '../content/faq.json';
+
+// live tariffs (price + perks editable from /admin)
+const pricing = getTariffs().map((t) => ({ id: t.key, name: t.label, subtitle: t.subtitle, popular: t.popular, price: t.price, perks: t.perks }));
+const formTariffs = pricing.map((p) => ({ id: p.id, name: p.name, price: p.price }));
+
+// speakers (managed from /admin/speakers)
+const speakers = listSpeakers();
+
+const stats = [
+  { n: '2000+', l: 'ISHTIROKCHI' },
+  { n: '20+', l: 'TOP SPIKERLAR' },
+  { n: '02', l: 'ZAL · AI / DATA' },
+  { n: '8', l: 'SOAT DASTUR' },
+];
+
+const prizes = [
+  { title: "AI-instrumentlar yillik obunasi", desc: "ChatGPT, Midjourney va boshqa premium generativ AI vositalariga 1 yillik to'liq obuna. Tanlov g'oliblariga." },
+  { title: "GPU va bulutli kreditlar", desc: "Shaxsiy AI-loyihalaringizni ishga tushirish uchun bulutli hisoblash krediti va GPU vaqti to'plami." },
+  { title: "10 ta premium noutbuk", desc: "AI bilan ishlashga mo'ljallangan kuchli noutbuklar. Festival oxirida tasodifiy tanlov orqali tarqatiladi." },
+  { title: "Spikerlar bilan mentorlik", desc: "Har bir spikerdan shaxsiy 1:1 mentoring yoki biznesingiz uchun AI-audit sessiyasi — eng faol ishtirokchilarga." },
+];
+
+const partners = [
+  { role: 'Bosh hamkor', name: 'IT Park Uzbekistan' },
+  { role: 'Asosiy hamkor', name: 'AI FABRIKA' },
+  { role: 'Asosiy hamkor', name: 'Digital Hub' },
+  { role: 'Tashkilotchilar', name: 'Biznes Fabrika' },
+  { role: 'Tashkilotchilar', name: 'AI Academy' },
+];
+
+const money = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+---
+<BaseLayout>
+  <Header />
+  <main class="bg-bg text-ink overflow-x-hidden selection:bg-gold selection:text-bg">
+
+    <!-- ============ HERO ============ -->
+    <section id="about" class="relative min-h-screen flex items-center pt-28 pb-24 overflow-hidden">
+      <!-- decorative gold haze -->
+      <div class="pointer-events-none absolute -top-40 right-[-10%] w-[55vw] h-[55vw] max-w-[760px] max-h-[760px] rounded-full opacity-60"
+           style="background: radial-gradient(circle, rgba(255,204,0,0.16) 0%, rgba(255,204,0,0) 65%);"></div>
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-bg"></div>
+
+      <div class="max-w-[1280px] mx-auto px-6 lg:px-12 w-full relative z-10 grid md:grid-cols-12 gap-8">
+        <div class="md:col-span-9 flex flex-col gap-8">
+          <div class="font-mono text-[12px] md:text-[13px] text-gold flex items-center gap-3 tracking-[0.18em] uppercase">
+            <span class="w-10 h-px bg-gold"></span> 23 IYUN 2026 / TASHKENT
+          </div>
+
+          <h1 class="font-display font-extrabold uppercase leading-[0.9] tracking-tightest text-white text-[18vw] sm:text-[14vw] lg:text-[10vw] text-glow">
+            AI&nbsp;FEST<br/><span class="text-gold">2026</span>
+          </h1>
+
+          <p class="font-sans text-lg md:text-xl text-ink-2 max-w-2xl leading-relaxed">
+            O'zbekistonda sun'iy intellekt transformatsiyasiga bag'ishlangan eng yirik forum.
+            2000 dan ortiq mutaxassis va texnologiya yetakchisi — bir kun, bir maydon.
+          </p>
+
+          <div class="flex flex-wrap gap-4 items-center">
+            <a href="#tarif-standard" class="js-goto-standard cta-pulse bg-gold text-bg px-8 py-4 rounded font-mono font-semibold text-[12px] uppercase tracking-[0.18em] hover:bg-gold-bright transition-all flex items-center gap-2">
+              Joy band qilish <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </a>
+            <a href="#venue" class="glass-panel text-ink px-8 py-4 rounded font-mono font-semibold text-[12px] uppercase tracking-[0.18em] hover:border-gold transition-colors">
+              Batafsil
+            </a>
+          </div>
+
+          <!-- countdown -->
+          <div class="mt-2 max-w-2xl">
+            <Countdown client:load />
+          </div>
+        </div>
+
+        <!-- stats -->
+        <div class="md:col-span-12 mt-4 glass-panel p-8 rounded-xl grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((s) => (
+            <div class="flex flex-col gap-2">
+              <span class="font-display font-extrabold text-5xl md:text-6xl text-gold leading-none tabular tracking-tightest">{s.n}</span>
+              <span class="font-mono text-[11px] tracking-[0.16em] text-ink-2 uppercase">{s.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VENUE ============ -->
+    <section id="venue" class="py-20 md:py-32">
+      <div class="max-w-[1280px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-10">
+          <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/02</span> — MANZIL</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">02</div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 items-stretch">
+          <div class="glass-panel rounded-xl overflow-hidden group min-h-[320px]">
+            <img src="/images/ecom/azimut-grand-hotel.png" alt="Azimut Grand Hotel" loading="lazy"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 photo" />
+          </div>
+
+          <div class="flex flex-col justify-center gap-6 glass-panel rounded-xl p-8 md:p-10">
+            <div class="font-mono text-[12px] text-gold tracking-[0.16em] uppercase">23 IYUN, 2026 YIL</div>
+            <h3 class="font-display font-extrabold text-4xl md:text-5xl text-white uppercase leading-[0.95] tracking-tightest">
+              Azimut Grand Hotel<br/>Tashkent
+            </h3>
+            <p class="font-sans text-base text-ink-2 leading-relaxed">
+              Premium-class konferensiya zallari, sun'iy intellekt texnologiyalari bilan jihozlangan maxsus
+              hududlar va networking uchun ideal muhit.
+            </p>
+            <a href="https://yandex.uz/maps/?ll=69.28354300,41.33774600&pt=69.28354300,41.33774600,pm2vvm&z=16&l=map&lang=ru_RU"
+               target="_blank" rel="noopener"
+               class="glass-panel glow-hover p-4 flex justify-between items-center rounded mt-2">
+              <span class="font-mono text-[12px] text-ink uppercase tracking-[0.1em]">Azimut Grand Hotel · Bodomzor metro</span>
+              <span class="material-symbols-outlined text-gold">location_on</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPEAKERS ============ -->
+    {speakers.length > 0 && (
+      <section id="speakers" class="py-20 md:py-32">
+        <div class="max-w-[1280px] mx-auto px-6 lg:px-12">
+          <div class="flex justify-between items-end border-b border-rule pb-4 mb-10">
+            <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/03</span> — SPIKERLAR</h2>
+            <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">03</div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {speakers.map((s) => (
+              <div class="glass-panel p-4 rounded-xl group glow-hover">
+                <div class="aspect-[3/4] overflow-hidden rounded-lg mb-4 bg-white/[0.04]">
+                  {s.photo ? (
+                    <img src={`/api/speaker-photo?id=${s.id}&v=${encodeURIComponent(s.photo)}`} alt={s.name} loading="lazy"
+                         class="w-full h-full object-cover object-top photo-mono" />
+                  ) : (
+                    <div class="w-full h-full grid place-items-center font-display font-extrabold text-5xl uppercase text-gold/30">{s.name.slice(0, 1)}</div>
+                  )}
+                </div>
+                <h4 class="font-display font-bold text-sm md:text-base text-white uppercase mb-1 leading-tight">{s.name}</h4>
+                {s.role && <p class="font-mono text-[10px] md:text-[11px] text-gold tracking-[0.04em] leading-snug">{s.role}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- ============ GIFTS ============ -->
+    <section id="sovgalar" class="py-20 md:py-32">
+      <div class="max-w-[1280px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-8">
+          <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/04</span> — MAXSUS SOVG'ALAR</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">04</div>
+        </div>
+        <p class="font-sans text-lg text-ink-2 mb-10">Umumiy qiymati <span class="text-white font-semibold tabular">70 000 000+ so'm</span>lik sovg'alar forum ishtirokchilari uchun.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {prizes.map((p, i) => (
+            <div class="glass-panel p-6 rounded-xl group hover:border-gold transition-colors">
+              <div class="font-display font-extrabold text-6xl leading-none mb-4 text-white/[0.06] group-hover:text-gold/25 transition-colors tabular">{String(i + 1).padStart(2, '0')}</div>
+              <h3 class="font-display font-bold text-lg text-white uppercase mb-2 leading-snug">{p.title}</h3>
+              <p class="font-sans text-sm text-ink-2 leading-relaxed">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRICING ============ -->
+    <section id="tarifi" class="py-20 md:py-32">
+      <div class="max-w-[1280px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-8">
+          <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/05</span> — UCH DARAJA</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">05</div>
+        </div>
+        <p class="font-sans text-lg text-ink-2 mb-10">Erta joy band qilganlar uchun chegirma narxlar. Joylar cheklangan.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+          {pricing.map((p, i) => {
+            const popular = (p as any).popular === true;
+            return (
+              <div id={popular ? 'tarif-standard' : undefined} class:list={[
+                'glass-panel rounded-xl p-8 flex flex-col h-full transition-transform hover:-translate-y-2 relative overflow-hidden scroll-mt-24',
+                popular && 'border-gold shadow-glow',
+              ]}>
+                {popular && (
+                  <div class="absolute top-4 right-4 bg-gold text-bg px-3 py-1 rounded text-[10px] font-mono uppercase tracking-[0.14em]">Eng mashhur</div>
+                )}
+                <div class="font-mono text-[11px] text-gold mb-2 uppercase tracking-[0.16em]">T/{String(i + 1).padStart(2, '0')} — {p.subtitle}</div>
+                <h3 class="font-display font-bold text-3xl text-white uppercase mb-5 tracking-tightest">{p.name}</h3>
+                <div class="mb-6 border-b border-rule pb-6">
+                  <span class="font-display font-extrabold text-4xl lg:text-5xl text-white tabular leading-none">{money(p.price)}</span>
+                  <span class="font-mono text-[12px] text-ink-2 block mt-2">so'm / kishi</span>
+                </div>
+                <ul class="flex flex-col gap-3 font-sans text-[15px] text-ink-2 flex-grow mb-8">
+                  {p.perks.map((perk) => (
+                    <li class="flex items-start gap-2">
+                      <span class="material-symbols-outlined text-gold text-[20px] leading-none mt-0.5">check</span>
+                      <span>{perk}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a href="#register" data-tariff={p.id} class:list={[
+                  'js-pick-tariff block w-full text-center py-3 rounded font-mono font-semibold text-[12px] uppercase tracking-[0.16em] transition-colors',
+                  popular ? 'bg-gold text-bg hover:bg-gold-bright glow-hover' : 'border border-gold text-gold hover:bg-gold hover:text-bg',
+                ]}>
+                  Tanlash →
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PARTNERS ============ -->
+    <section id="partners" class="py-20 md:py-32">
+      <div class="max-w-[1280px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-10">
+          <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/06</span> — FORUM HAMKORLARI</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">06</div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+          {partners.map((p) => (
+            <div class="glass-panel rounded-xl flex flex-col items-center justify-center gap-2 text-center h-32 hover:border-gold transition-colors p-6">
+              <span class="font-mono text-[10px] text-ink-3 uppercase tracking-[0.14em]">{p.role}</span>
+              <span class="font-display font-bold text-base md:text-lg text-white">{p.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section id="faq" class="py-20 md:py-32">
+      <div class="max-w-[1000px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-10">
+          <h2 class="font-display font-bold text-xl md:text-3xl text-white uppercase"><span class="text-gold">AI/07</span> — TEZ-TEZ BERILADIGAN SAVOLLAR</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm shrink-0 ml-4">07</div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          {faq.map((f, i) => (
+            <details class="faq-item glass-panel rounded-xl group" open={i === 0}>
+              <summary class="flex justify-between items-center gap-6 p-6 cursor-pointer list-none font-display font-bold text-base md:text-xl text-white">
+                {f.q}
+                <span class="material-symbols-outlined text-gold transition-transform group-open:rotate-180 shrink-0">expand_more</span>
+              </summary>
+              <div class="px-6 pb-6 font-sans text-base text-ink-2 leading-relaxed">{f.a}</div>
+            </details>
+          ))}
+        </div>
+        <style is:global>
+          .faq-item summary::-webkit-details-marker { display: none; }
+        </style>
+      </div>
+    </section>
+
+    <!-- ============ REGISTER ============ -->
+    <section id="register" class="py-20 md:py-32">
+      <div class="max-w-[1100px] mx-auto px-6 lg:px-12">
+        <div class="flex justify-between items-end border-b border-rule pb-4 mb-8">
+          <h2 class="font-display font-bold text-2xl md:text-4xl text-white uppercase"><span class="text-gold">AI/08</span> — JOY BAND QILISH</h2>
+          <div class="w-12 h-12 rounded-full border border-rule grid place-items-center text-ink-2 font-mono text-sm">08</div>
+        </div>
+        <p class="font-sans text-lg text-ink-2 max-w-2xl mb-10">
+          30 soniyada to'ldiriladi. To'lovdan so'ng QR-chiptangiz Telegram bot orqali darhol keladi.
+        </p>
+        <RegisterForm tariffs={formTariffs} client:visible />
+      </div>
+    </section>
+
+  </main>
+  <Footer />
+
+  <script is:inline>
+    document.addEventListener('click', (e) => {
+      const t = e.target instanceof Element ? e.target : null;
+      if (!t) return;
+
+      // "Joy band qilish" → land on the STANDARD card (centered)
+      const goto = t.closest('.js-goto-standard');
+      if (goto) {
+        e.preventDefault();
+        const std = document.getElementById('tarif-standard');
+        if (std) std.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Tariff "Tanlash" → remember choice, scroll to the form, auto-select it
+      const a = t.closest('.js-pick-tariff');
+      if (a) {
+        e.preventDefault();
+        const key = a.getAttribute('data-tariff');
+        if (key) {
+          try { sessionStorage.setItem('ecf_tariff', key); } catch (_) {}
+          window.dispatchEvent(new CustomEvent('ecf:set-tariff', { detail: key }));
+        }
+        const reg = document.getElementById('register');
+        if (reg) reg.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  </script>
+</BaseLayout>

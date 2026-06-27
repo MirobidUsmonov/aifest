@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80">
+  <g transform="translate(6 14)">
+    <path d="M16 4 C16 4 4 20 16 36 C28 20 16 4 16 4 Z" fill="#03A9F4"/>
+    <circle cx="34" cy="38" r="9" fill="#0288D1"/>
+  </g>
+  <text x="60" y="51" font-family="Inter, Geist, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="-0.6">МойСклад</text>
+</svg>

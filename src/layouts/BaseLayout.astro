@@ -1,0 +1,35 @@
+---
+import '../styles/global.css';
+import FloatingCTA from '../components/react/FloatingCTA';
+interface Props { title?: string; description?: string; }
+const {
+  title = "AI FEST 2026 — 23-iyun, Toshkent",
+  description = "AI FEST 2026 — O'zbekistondagi eng yirik sun'iy intellekt va avtomatlashtirish festivali. 23-iyun 2026, Toshkent, Azimut Grand Hotel."
+} = Astro.props;
+---
+<!doctype html>
+<html lang="uz" class="bg-bg text-ink">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-aifest.svg" />
+    <link rel="apple-touch-icon" href="/favicon-aifest.svg" />
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="uz_UZ" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-bg text-ink">
+    <slot />
+    <FloatingCTA client:idle />
+    <script>
+      import { initLenis } from '../lib/lenis';
+      initLenis();
+    </script>
+  </body>
+</html>

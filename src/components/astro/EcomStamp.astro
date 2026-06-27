@@ -1,0 +1,90 @@
+---
+// EcomStamp — circular tilla (gold) medallion motif for AI FEST.
+// Dark coin + gold ring + gold-gradient centre wordmark + optional arced mono labels.
+interface Props {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  center?: string;
+  arcTop?: string;
+  arcBottom?: string;
+  invert?: boolean; // true = sits on a gold surface (keeps the dark coin, lifts the ring)
+  rotate?: boolean; // slow rotation, watermark only
+  className?: string;
+}
+const {
+  size = 'md',
+  center = 'AI',
+  arcTop,
+  arcBottom,
+  invert = false,
+  rotate = false,
+  className = '',
+} = Astro.props;
+
+const px = { xs: 32, sm: 64, md: 128, lg: 240, xl: 560 }[size];
+const centerSize = { xs: 10, sm: 18, md: 36, lg: 64, xl: 140 }[size];
+const arcFont = { xs: 3, sm: 5, md: 7, lg: 11, xl: 22 }[size];
+const ringInset = Math.max(2, Math.round(px * 0.045));
+
+// gold medallion: midnight disc, gold engraving — reads on both dark and gold surfaces
+const fill = '#0b1222';
+const textColor = '#ffcc00';
+const ringColor = invert ? 'rgba(255,204,0,0.7)' : 'rgba(255,204,0,0.5)';
+
+const uid = `${size}-${center.replace(/\W/g, '')}`;
+const r = px / 2;
+const innerR = r - ringInset;
+const arcR = innerR - arcFont * 1.2;
+// SVG path for arc text — top arc reads left→right, bottom arc reads left→right (so it isn't upside-down)
+const arcTopPath = `M ${r - arcR},${r} a ${arcR},${arcR} 0 1,1 ${arcR * 2},0`;
+const arcBottomPath = `M ${r - arcR},${r} a ${arcR},${arcR} 0 1,0 ${arcR * 2},0`;
+---
+<span
+  class:list={['inline-block align-middle relative shrink-0', rotate && 'stamp-rotate', className]}
+  style={`width:${px}px;height:${px}px;`}
+  aria-hidden="true"
+>
+  <svg viewBox={`0 0 ${px} ${px}`} width={px} height={px} class="block">
+    <defs>
+      <linearGradient id={`goldgrad-${uid}`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stop-color="#ffe16d" />
+        <stop offset="0.3" stop-color="#ffd700" />
+        <stop offset="0.62" stop-color="#ffcc00" />
+        <stop offset="1" stop-color="#e0a800" />
+      </linearGradient>
+    </defs>
+    <circle cx={r} cy={r} r={r} fill={fill} />
+    <circle cx={r} cy={r} r={r - 0.5} fill="none" stroke={`url(#goldgrad-${uid})`} stroke-width={Math.max(1, px * 0.012)} stroke-opacity="0.85" />
+    <circle cx={r} cy={r} r={innerR} fill="none" stroke={ringColor} stroke-width="1" />
+    {arcTop && (
+      <g class="stamp-arc">
+        <defs>
+          <path id={`arcTop-${uid}`} d={arcTopPath} />
+        </defs>
+        <text fill={textColor} font-size={arcFont}>
+          <textPath href={`#arcTop-${uid}`} startOffset="50%" text-anchor="middle">{arcTop}</textPath>
+        </text>
+      </g>
+    )}
+    {arcBottom && (
+      <g class="stamp-arc">
+        <defs>
+          <path id={`arcBot-${uid}`} d={arcBottomPath} />
+        </defs>
+        <text fill={textColor} fill-opacity="0.75" font-size={arcFont}>
+          <textPath href={`#arcBot-${uid}`} startOffset="50%" text-anchor="middle">{arcBottom}</textPath>
+        </text>
+      </g>
+    )}
+    <text
+      x="50%"
+      y="50%"
+      text-anchor="middle"
+      dominant-baseline="central"
+      fill={`url(#goldgrad-${uid})`}
+      font-family="'Hanken Grotesk', Arial, sans-serif"
+      font-weight="800"
+      font-size={centerSize}
+      letter-spacing="-0.04em"
+    >{center}</text>
+  </svg>
+</span>

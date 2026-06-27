@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80">
+  <g transform="translate(4 16)">
+    <rect width="48" height="48" rx="10" fill="#CB11AB"/>
+    <text x="24" y="34" font-family="Inter, Geist, sans-serif" font-size="24" font-weight="900" fill="#ffffff" text-anchor="middle">wb</text>
+  </g>
+  <text x="64" y="51" font-family="Inter, Geist, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="-0.6">Wildberries</text>
+</svg>

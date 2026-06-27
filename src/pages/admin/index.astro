@@ -1,0 +1,79 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { stats, listOrders } from '../../lib/store';
+const s = stats();
+const recent = listOrders().slice(0, 6);
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const TARIFFS = [
+  { key: 'free', label: "KO'RGAZMA" },
+  { key: 'standard', label: 'KONFERENSIYA' },
+  { key: 'vip', label: 'VIP' },
+];
+const cards = [
+  { label: 'Jami buyurtma', value: fmt(s.total_orders) },
+  { label: 'To‘langan', value: fmt(s.paid_orders) },
+  { label: 'Daromad (so‘m)', value: fmt(s.revenue) },
+  { label: 'Sotilgan chipta', value: fmt(s.tickets_sold) },
+];
+---
+<AdminLayout title="Dashboard" active="dashboard">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Boshqaruv paneli</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 32px;">AI FEST '26 · buyurtmalar va to‘lovlar umumiy ko‘rinishi.</p>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px; background:#262626; border:1px solid #262626; margin-bottom:32px;">
+    {cards.map((c) => (
+      <div style="background:#0e0e0e; padding:24px;">
+        <div class="caps" style="color:#A1A1A1; margin-bottom:14px;">{c.label}</div>
+        <div class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; line-height:1; color:#fff;">{c.value}</div>
+      </div>
+    ))}
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;" class="adm-grid2">
+    <!-- by tariff -->
+    <div class="card" style="padding:0;">
+      <div style="padding:18px 20px; border-bottom:1px solid #262626;" class="caps">Tariflar bo‘yicha</div>
+      <table>
+        <thead><tr><th>Tarif</th><th>Buyurtma</th><th>To‘landi</th><th>Daromad</th></tr></thead>
+        <tbody>
+          {TARIFFS.map((t) => {
+            const r = s.by_tariff[t.key] ?? { orders: 0, paid: 0, revenue: 0, tickets: 0 };
+            return (
+              <tr>
+                <td style="color:#fff; font-weight:600;">{t.label}</td>
+                <td>{fmt(r.orders)}</td>
+                <td>{fmt(r.paid)}</td>
+                <td>{fmt(r.revenue)} so‘m</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- recent -->
+    <div class="card" style="padding:0;">
+      <div style="padding:18px 20px; border-bottom:1px solid #262626; display:flex; justify-content:space-between;">
+        <span class="caps">So‘nggi buyurtmalar</span>
+        <a href="/admin/payments" class="caps" style="color:#fff;">Barchasi →</a>
+      </div>
+      {recent.length === 0 ? (
+        <div style="padding:40px 20px; text-align:center; color:#555; font-size:13px;">Hozircha buyurtma yo‘q.</div>
+      ) : (
+        <table>
+          <tbody>
+            {recent.map((o) => (
+              <tr>
+                <td style="color:#fff;">{o.buyer_name}<div style="color:#555; font-size:11px; margin-top:2px;">{o.order_number}</div></td>
+                <td>{o.tariff_name} ×{o.quantity}</td>
+                <td><span class:list={['badge', o.status === 'paid' ? 'badge-paid' : o.status === 'pending' ? 'badge-pending' : 'badge-failed']}>{o.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </div>
+  <style>@media (max-width:860px){ .adm-grid2{ grid-template-columns:1fr !important; } }</style>
+</AdminLayout>

@@ -1,0 +1,8 @@
+[
+  { "id": "strategies", "title": "2026 sotuv strategiyalari", "desc": "Yangi yilda raqobatda yutib chiqish uchun ishlaydigan strategiyalar.", "icon": "/images/tilda/icon-vr.svg" },
+  { "id": "ads", "title": "Reklama optimizatsiyasi", "desc": "ROI ni ikki barobarga oshirish va byudjetni samarali sarflash.", "icon": "/images/tilda/icon-prise.svg" },
+  { "id": "assortment", "title": "Assortimentni kengaytirish", "desc": "Yangi mahsulot kategoriyalariga chiqish va scaling.", "icon": "/images/tilda/icon-team.svg" },
+  { "id": "automation", "title": "Hisob avtomatlashtirish", "desc": "Excel dan tizimli buxgalteriyaga o'tish.", "icon": "/images/tilda/icon-store.svg" },
+  { "id": "funnels", "title": "Sotuv voronkasi", "desc": "Konversiya yo'qotmasdan auditoriyani client ga aylantirish.", "icon": "/images/tilda/icon-check.svg" },
+  { "id": "growth", "title": "O'sish modellari", "desc": "Yangi marketplace lar va xalqaro bozorga chiqish.", "icon": "/images/tilda/icon-check.svg" }
+]

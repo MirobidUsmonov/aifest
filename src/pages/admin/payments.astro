@@ -1,0 +1,102 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { listOrders } from '../../lib/store';
+
+const url = Astro.url;
+const fStatus = url.searchParams.get('status') ?? '';
+const fTariff = url.searchParams.get('tariff') ?? '';
+const q = (url.searchParams.get('q') ?? '').trim().toLowerCase();
+
+let orders = listOrders();
+if (fStatus) orders = orders.filter((o) => o.status === fStatus);
+if (fTariff) orders = orders.filter((o) => o.tariff_key === fTariff);
+if (q) orders = orders.filter((o) =>
+  o.buyer_name.toLowerCase().includes(q) || o.buyer_phone.includes(q) || o.order_number.toLowerCase().includes(q));
+
+const pendingNumbers = listOrders().filter((o) => o.status === 'pending').map((o) => o.order_number);
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const dt = (s?: string | null) => (s ? new Date(s).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—');
+---
+<AdminLayout title="Payments" active="payments">
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+    <div>
+      <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0; color:#fff;">To‘lovlar</h1>
+      <p style="color:#A1A1A1; font-size:14px; margin:6px 0 0;">{fmt(orders.length)} ta buyurtma · {fmt(pendingNumbers.length)} kutilmoqda</p>
+    </div>
+    <button id="refresh-all" class="btn btn-ghost" data-pending={JSON.stringify(pendingNumbers)}>↻ Statuslarni yangilash</button>
+  </div>
+
+  <form method="GET" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+    <input type="text" name="q" value={q} placeholder="Ism / telefon / buyurtma…" style="max-width:280px;" />
+    <select name="status" style="max-width:160px;">
+      <option value="" selected={!fStatus}>— status —</option>
+      <option value="paid" selected={fStatus==='paid'}>paid</option>
+      <option value="pending" selected={fStatus==='pending'}>pending</option>
+      <option value="cancelled" selected={fStatus==='cancelled'}>cancelled</option>
+    </select>
+    <select name="tariff" style="max-width:160px;">
+      <option value="" selected={!fTariff}>— tarif —</option>
+      <option value="free" selected={fTariff==='free'}>BEPUL</option>
+      <option value="standard" selected={fTariff==='standard'}>STANDARD</option>
+      <option value="vip" selected={fTariff==='vip'}>VIP</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filtr</button>
+    <a href="/admin/payments" class="btn btn-ghost">Tozalash</a>
+  </form>
+
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>Buyurtma</th><th>Xaridor</th><th>Tarif</th><th>Soni</th><th>Summa</th><th>Status</th><th>Sana</th><th>Amal</th></tr>
+      </thead>
+      <tbody>
+        {orders.length === 0 && (<tr><td colspan="8" style="text-align:center; color:#555; padding:40px;">Buyurtma topilmadi.</td></tr>)}
+        {orders.map((o) => (
+          <tr>
+            <td style="color:#fff;">{o.order_number}{o.promo_code && <div style="color:#A1A1A1; font-size:10px; margin-top:2px;">promo: {o.promo_code}</div>}</td>
+            <td>{o.buyer_name}<div style="color:#555; font-size:11px; margin-top:2px;">{o.buyer_phone}</div></td>
+            <td>{o.tariff_name}</td>
+            <td>{o.quantity}</td>
+            <td>{fmt(o.amount)} so‘m</td>
+            <td><span class:list={['badge', o.status === 'paid' ? 'badge-paid' : o.status === 'pending' ? 'badge-pending' : 'badge-failed']}>{o.status}</span></td>
+            <td style="color:#A1A1A1;">{dt(o.created_at)}</td>
+            <td>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                {o.status === 'pending' && o.payment_url && (<a href={o.payment_url} target="_blank" class="caps" style="color:#fff; border:1px solid #262626; padding:4px 8px;">Payme</a>)}
+                {o.tickets && o.tickets.length > 0 && (<a href={`/api/ticket-pdf?n=${encodeURIComponent(o.tickets[0].ticket_number)}`} target="_blank" class="caps" style="color:#fff; border:1px solid #262626; padding:4px 8px;">PDF</a>)}
+                <form method="POST" action="/api/admin/order" style="margin:0; display:flex; gap:4px; align-items:center;">
+                  <input type="hidden" name="order_number" value={o.order_number} />
+                  <select name="status" style="width:auto; font-size:11px; padding:4px 6px;">
+                    <option value="paid" selected={o.status === 'paid'}>paid</option>
+                    <option value="pending" selected={o.status === 'pending'}>pending</option>
+                    <option value="cancelled" selected={o.status === 'cancelled'}>cancelled</option>
+                    <option value="refunded" selected={o.status === 'refunded'}>refunded</option>
+                  </select>
+                  <button class="caps" style="color:#fff; border:1px solid #fff; padding:4px 8px; background:none; cursor:pointer; font-family:'JetBrains Mono',monospace;">Saqlash</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <script is:inline>
+    (function () {
+      const btn = document.getElementById('refresh-all');
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        let pending = [];
+        try { pending = JSON.parse(btn.getAttribute('data-pending') || '[]'); } catch (e) {}
+        if (!pending.length) { location.reload(); return; }
+        btn.textContent = 'Yangilanmoqda…';
+        for (const num of pending) {
+          try { await fetch('/api/order-status?order=' + encodeURIComponent(num), { cache: 'no-store' }); } catch (e) {}
+        }
+        location.reload();
+      });
+    })();
+  </script>
+</AdminLayout>

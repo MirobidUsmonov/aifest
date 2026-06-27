@@ -1,0 +1,68 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { listPromos, getTariffs } from '../../lib/store';
+const promos = listPromos();
+const tariffs = getTariffs();
+const priceByKey: Record<string, number> = Object.fromEntries(tariffs.map((t) => [t.key, t.price]));
+const labelByKey: Record<string, string> = Object.fromEntries(tariffs.map((t) => [t.key, t.label]));
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const summa = (k: string) => (priceByKey[k] === 0 ? 'BEPUL' : fmt(priceByKey[k] ?? 0) + ' so‘m');
+const dt = (s: string) => new Date(s).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: '2-digit' });
+---
+<AdminLayout title="Promo Codes" active="promo">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Promo-kodlar</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 28px;">Kod xaridorga tanlangan tarifga <b style="color:#fff;">foizli chegirma</b> beradi. Xaridor formada promo-kodni kiritib "Qo‘llash" bosadi.</p>
+
+  <div style="display:grid; grid-template-columns:320px 1fr; gap:24px;" class="adm-grid-promo">
+    <!-- create -->
+    <div class="card" style="padding:24px; align-self:start;">
+      <div class="caps" style="margin-bottom:18px;">Yangi kod</div>
+      <form method="POST" action="/api/admin/promo">
+        <input type="hidden" name="action" value="save" />
+        <label class="caps" style="display:block; margin-bottom:6px;">Kod</label>
+        <input type="text" name="code" required placeholder="FABRIKA30" style="margin-bottom:14px; text-transform:uppercase;" />
+        <label class="caps" style="display:block; margin-bottom:6px;">Chegirma (%)</label>
+        <input type="number" name="percent" required min="1" max="100" value="10" style="margin-bottom:14px;" />
+        <label class="caps" style="display:block; margin-bottom:6px;">Qaysi tariflar (bo‘sh = barchasi)</label>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+          {tariffs.map((t) => (
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#e2e2e2; cursor:pointer;"><input type="checkbox" name="tariffs" value={t.key} style="width:15px; height:15px; accent-color:#fff;" /> {t.label}</label>
+          ))}
+        </div>
+        <label class="caps" style="display:block; margin-bottom:6px;">Limit (0 = cheksiz)</label>
+        <input type="number" name="max_uses" value="0" min="0" style="margin-bottom:14px;" />
+        <label class="caps" style="display:block; margin-bottom:6px;">Izoh (ixtiyoriy)</label>
+        <input type="text" name="label" placeholder="Erta ro‘yxat" style="margin-bottom:20px;" />
+        <button type="submit" class="btn btn-primary" style="width:100%;">Kod yaratish →</button>
+      </form>
+    </div>
+
+    <!-- list -->
+    <div class="card" style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Kod</th><th>Chegirma</th><th>Tariflar</th><th>Foydalanildi</th><th>Holat</th><th>Sana</th><th>Amal</th></tr></thead>
+        <tbody>
+          {promos.length === 0 && (<tr><td colspan="7" style="text-align:center; color:#555; padding:40px;">Kod yo‘q.</td></tr>)}
+          {promos.map((p) => (
+            <tr>
+              <td style="color:#fff; font-weight:600;">{p.code}{p.label && <div style="color:#555; font-size:11px; margin-top:2px;">{p.label}</div>}</td>
+              <td style="color:#fff;">−{p.percent}%</td>
+              <td style="color:#A1A1A1;">{p.tariffs && p.tariffs.length ? p.tariffs.map((k) => labelByKey[k] ?? k).join(', ') : 'Barchasi'}</td>
+              <td>{p.used}{p.max_uses > 0 ? ` / ${p.max_uses}` : ' / ∞'}</td>
+              <td><span class:list={['badge', p.active ? 'badge-paid' : 'badge-pending']}>{p.active ? 'faol' : 'o‘chiq'}</span></td>
+              <td style="color:#A1A1A1;">{dt(p.created_at)}</td>
+              <td>
+                <div style="display:flex; gap:8px;">
+                  <form method="POST" action="/api/admin/promo" style="margin:0;"><input type="hidden" name="action" value="toggle" /><input type="hidden" name="code" value={p.code} /><button class="caps" style="background:none; border:1px solid #262626; color:#A1A1A1; padding:4px 8px; cursor:pointer; font-family:'JetBrains Mono',monospace;">{p.active ? 'O‘chir' : 'Yoq'}</button></form>
+                  <form method="POST" action="/api/admin/promo" style="margin:0;" onsubmit="return confirm('O‘chirilsinmi?')"><input type="hidden" name="action" value="delete" /><input type="hidden" name="code" value={p.code} /><button class="caps" style="background:none; border:1px solid #FF3B30; color:#FF3B30; padding:4px 8px; cursor:pointer; font-family:'JetBrains Mono',monospace;">DEL</button></form>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <style>@media (max-width:860px){ .adm-grid-promo{ grid-template-columns:1fr !important; } }</style>
+</AdminLayout>

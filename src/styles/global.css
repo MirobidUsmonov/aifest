@@ -1,0 +1,108 @@
+@import './fonts.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #020617;
+  --ink: #f6f1e7;
+  --gold: #ffcc00;
+  --gold-bright: #ffd700;
+  --gold-deep: #b8862b;
+}
+
+* { box-sizing: border-box; }
+
+/* smooth anchor scrolling + offset so the fixed header doesn't cover section tops */
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 84px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+html, body {
+  background: #020617;
+  color: #f6f1e7;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html { overflow-x: hidden; }
+body {
+  overflow-x: hidden;
+  /* twin gold glows anchoring the page in a deep-space AI atmosphere */
+  background-image:
+    radial-gradient(80% 50% at 80% -5%, rgba(255, 204, 0, 0.12) 0%, rgba(255, 204, 0, 0) 60%),
+    radial-gradient(70% 45% at 5% 10%, rgba(255, 204, 0, 0.06) 0%, rgba(255, 204, 0, 0) 55%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Hanken Grotesk', Arial, sans-serif;
+  color: #f6f1e7;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ── Glassmorphism ──────────────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+.glow-hover { transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s; }
+.glow-hover:hover {
+  box-shadow: 0 0 30px rgba(255, 204, 0, 0.30);
+  border-color: #ffcc00;
+}
+.text-glow { text-shadow: 0 0 12px rgba(255, 204, 0, 0.45); }
+
+/* ── Gold helpers ───────────────────────────────────────────────────── */
+.text-gold { color: var(--gold); }
+.gold-gradient {
+  background: linear-gradient(176deg, #ffe16d 0%, #ffd700 30%, #ffcc00 60%, #b8862b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.gold-glow { text-shadow: 0 0 28px rgba(255, 204, 0, 0.35); }
+.rule-gold { border-color: rgba(255, 204, 0, 0.34); }
+
+/* Photo polish — colour photos sit slightly punchier */
+.photo { filter: contrast(1.05) saturate(1.04); }
+/* Grayscale-to-colour reveal — used on speaker portraits */
+.photo-mono { filter: grayscale(1) contrast(1.04); transition: filter 0.5s; }
+.group:hover .photo-mono { filter: grayscale(0) contrast(1.05) saturate(1.04); }
+
+/* Partner / logo polish */
+.mono-logo { opacity: 0.92; transition: opacity 0.2s; }
+.mono-logo:hover { opacity: 1; }
+.logo-invert { filter: brightness(0) invert(1); opacity: 0.82; transition: opacity 0.2s; }
+.logo-invert:hover { opacity: 1; }
+
+/* Hero backdrop tint — midnight wash so heavy text always reads */
+.hero-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.55) 0%, rgba(2, 6, 23, 0.80) 60%, rgba(2, 6, 23, 1) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* CTA pulse — subtle gold ring expansion to nudge the click */
+@keyframes cta-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.55); }
+  60%  { box-shadow: 0 0 0 14px rgba(255, 204, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
+}
+.cta-pulse { animation: cta-pulse 2.1s ease-in-out infinite; }
+.cta-pulse:hover { animation-play-state: paused; }
+
+/* Hairline FAQ accordion */
+.faq-divider { border-top: 1px solid rgba(255, 255, 255, 0.10); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

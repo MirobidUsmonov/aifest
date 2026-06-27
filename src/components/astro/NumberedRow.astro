@@ -1,0 +1,17 @@
+---
+interface Props {
+  number: string;
+  title: string;
+  body?: string;
+}
+const { number, title, body } = Astro.props;
+---
+<div class="grid grid-cols-12 gap-6 py-8 md:py-12 border-t border-rule items-start">
+  <div class="col-span-12 md:col-span-2 font-display font-black text-5xl md:text-6xl lg:text-7xl leading-none tracking-tightest text-ink">{number}</div>
+  <div class="col-span-12 md:col-span-5">
+    <h3 class="font-display font-bold text-xl md:text-2xl tracking-tight text-ink">{title}</h3>
+  </div>
+  {body && (
+    <p class="col-span-12 md:col-span-5 text-ink-2 leading-relaxed">{body}</p>
+  )}
+</div>

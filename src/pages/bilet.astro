@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/astro/Header.astro';
+import Footer from '../components/astro/Footer.astro';
+import MonoLabel from '../components/astro/MonoLabel.astro';
+export const prerender = false;
+---
+<BaseLayout title="Chiptani topish — AI FEST 2026" description="Buyurtma raqami yoki telefon orqali chiptangizni toping.">
+  <Header />
+  <main class="bg-bg text-ink min-h-screen">
+    <section class="max-w-[900px] mx-auto px-6 lg:px-12 pt-32 pb-24 md:pt-40">
+      <MonoLabel size="sm" muted={true}>AI FEST '26 · CHIPTANI TOPISH</MonoLabel>
+      <h1 class="mt-6 font-display font-black text-4xl md:text-6xl leading-[0.95] tracking-tightest uppercase">Chiptamni<br/>topish</h1>
+      <p class="mt-5 text-ink-2 max-w-xl leading-relaxed">Chiptangizni yo'qotdingizmi? Buyurtma raqami yoki ro'yxatdan o'tgan telefon raqamingizni kiriting — QR'li chiptangizni qayta yuklab olasiz.</p>
+
+      <form id="lookup-form" class="mt-10 flex flex-col sm:flex-row sm:items-end gap-4">
+        <div class="flex-1">
+          <label for="q" class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-2 block">Buyurtma raqami yoki telefon</label>
+          <input id="q" name="q" required maxlength="40" autocomplete="off"
+                 class="w-full bg-transparent border-b border-rule px-0 py-3 text-base text-ink placeholder:text-ink-3 focus:outline-none focus:border-ink transition-colors"
+                 placeholder="ORD12345  yoki  +998 90 123 45 67" />
+        </div>
+        <button id="lookup-btn" type="submit"
+                class="shrink-0 bg-ink text-bg px-8 py-3.5 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-ink-2 transition disabled:opacity-50">
+          Qidirish →
+        </button>
+      </form>
+
+      <div id="results" class="mt-12 space-y-6"></div>
+
+      <a href="/" class="inline-block mt-12 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 hover:text-ink transition">← AI FEST bosh sahifa</a>
+    </section>
+  </main>
+  <Footer />
+
+  <script is:inline>
+    (function () {
+      const form = document.getElementById('lookup-form');
+      const input = document.getElementById('q');
+      const btn = document.getElementById('lookup-btn');
+      const out = document.getElementById('results');
+
+      const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+      function card(inner) {
+        return '<div class="border border-rule p-7 md:p-9">' + inner + '</div>';
+      }
+      const isHttps = (u) => typeof u === 'string' && /^https:\/\//i.test(u);
+
+      function renderOrder(o) {
+        const head =
+          '<div class="flex items-center justify-between gap-4 flex-wrap mb-5">' +
+            '<div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2">BUYURTMA · ' + esc(o.order_number) + '</div>' +
+            '<span class="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 ' +
+              (o.paid ? 'bg-ink text-bg' : 'border border-rule text-ink-2') + '">' +
+              (o.paid ? "TO'LANDI ✓" : 'KUTILMOQDA') + '</span>' +
+          '</div>';
+        const meta =
+          '<div class="grid grid-cols-2 gap-y-2 gap-x-6 mb-6 text-sm">' +
+            '<div class="text-ink-3 font-mono text-[10px] uppercase tracking-[0.18em]">Egasi</div>' +
+            '<div class="text-ink text-right">' + esc(o.buyer_name) + '</div>' +
+            '<div class="text-ink-3 font-mono text-[10px] uppercase tracking-[0.18em]">Tarif</div>' +
+            '<div class="text-ink text-right">' + esc(o.tariff_name) + '</div>' +
+            '<div class="text-ink-3 font-mono text-[10px] uppercase tracking-[0.18em]">Telefon</div>' +
+            '<div class="text-ink-2 text-right tabular">' + esc(o.phone_masked) + '</div>' +
+          '</div>';
+
+        // Paid + downloadable (matched by order number) → show the QR/PDF tickets
+        if (o.paid && o.can_download && o.tickets && o.tickets.length) {
+          let rows = '';
+          o.tickets.forEach((t, i) => {
+            rows +=
+              '<li class="flex items-center justify-between gap-4 border border-rule px-5 py-4">' +
+                '<span class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2">CHIPTA ' + String(i + 1).padStart(2, '0') + (t.holder ? ' · ' + esc(t.holder) : '') + '</span>' +
+                '<a class="bg-ink text-bg px-5 py-2 font-mono font-semibold text-[10px] uppercase tracking-[0.18em] hover:bg-ink-2 transition" target="_blank" rel="noopener" href="/api/ticket-pdf?n=' + encodeURIComponent(t.ticket_number) + '">QR · PDF ⬇</a>' +
+              '</li>';
+          });
+          return card(head + meta +
+            '<div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-3">Chiptalaringiz</div>' +
+            '<ul class="space-y-3">' + rows + '</ul>' +
+            '<p class="text-ink-3 text-xs mt-5 leading-relaxed">Chiptani telefoningizga saqlab qo\'ying — kirishda QR skanerlanadi.</p>');
+        }
+
+        // Paid but matched by phone (no token proof) → confirm status, ask for the order number
+        if (o.paid && !o.can_download) {
+          return card(head + meta +
+            '<p class="text-ink-2 text-sm leading-relaxed">To\'lov tasdiqlangan ✓. Xavfsizlik uchun chipta faqat <b class="text-ink">buyurtma raqami</b> orqali yuklab olinadi. Buyurtma raqamingizni yuqoriga kiriting — u <span class="text-ink">/rahmat</span> sahifasida va Telegram tasdiqnomangizda bor.</p>');
+        }
+
+        // Pending
+        let action = '';
+        if (o.can_download && isHttps(o.payment_url)) {
+          action = '<a href="' + esc(o.payment_url) + '" class="inline-block mt-5 bg-ink text-bg px-7 py-3 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-ink-2 transition">To\'lovni yakunlash →</a>';
+        }
+        return card(head + meta +
+          '<p class="text-ink-2 text-sm leading-relaxed">To\'lov hali tasdiqlanmadi. Agar to\'lovni amalga oshirgan bo\'lsangiz, bir oz kuting va qayta qidiring.</p>' + action);
+      }
+
+      async function lookup(q) {
+        const query = (q || input.value || '').trim();
+        if (!query) return;
+        btn.disabled = true; btn.textContent = '…';
+        out.innerHTML = '<div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Qidirilmoqda…</div>';
+        try {
+          const r = await fetch('/api/ticket-lookup?q=' + encodeURIComponent(query), { cache: 'no-store' });
+          const d = await r.json();
+          if (!d.ok) { out.innerHTML = card('<p class="text-ink">' + esc(d.error || 'Xatolik.') + '</p>'); return; }
+          if (!d.orders || !d.orders.length) {
+            out.innerHTML = card(
+              '<div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-3">TOPILMADI</div>' +
+              '<p class="text-ink-2 text-sm leading-relaxed">Bu raqam bo\'yicha buyurtma topilmadi. Buyurtma raqami yoki telefon to\'g\'riligini tekshiring.</p>');
+            return;
+          }
+          out.innerHTML = d.orders.map(renderOrder).join('');
+        } catch (e) {
+          out.innerHTML = card('<p class="text-ink">Tarmoq xatosi. Qaytadan urinib ko\'ring.</p>');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Qidirish →';
+        }
+      }
+
+      form.addEventListener('submit', (e) => { e.preventDefault(); lookup(); });
+
+      // prefill + auto-search from ?q= or ?order=
+      const qs = new URLSearchParams(location.search);
+      let pre = qs.get('q') || qs.get('order');
+      if (!pre) { try { pre = localStorage.getItem('ecf_last_order'); } catch (e) {} }
+      if (pre) { input.value = pre; lookup(pre); }
+    })();
+  </script>
+</BaseLayout>

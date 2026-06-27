@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { countSubscribers } from '../../lib/store';
+
+const url = Astro.url;
+const sent = url.searchParams.get('sent');
+const failed = url.searchParams.get('failed');
+const err = url.searchParams.get('e');
+const subs = countSubscribers();
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+---
+<AdminLayout title="Broadcast" active="broadcast">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Hammaga xabar</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 24px;">Telegram bot orqali <b style="color:#fff;">barcha obunachilarga</b> bittada xabar yuboriladi. Faqat botni ochgan (start bosgan) odamlar oladi.</p>
+
+  {sent !== null && <div style="border:1px solid #2e7d32; background:rgba(46,125,50,.12); color:#9fd8a2; padding:12px 16px; margin-bottom:20px; font-size:14px;">✅ Yuborildi: <b>{fmt(Number(sent))}</b> · Yetmadi: {fmt(Number(failed || 0))} (bloklagan/o‘chirgan)</div>}
+  {err === 'empty' && <div style="border:1px solid #FF3B30; background:rgba(255,59,48,.1); color:#ff8b84; padding:12px 16px; margin-bottom:20px; font-size:14px;">Xabar matni bo‘sh.</div>}
+
+  <div style="display:grid; grid-template-columns:1fr 280px; gap:24px;" class="adm-grid2">
+    <div class="card" style="padding:24px;">
+      <form method="POST" action="/api/admin/broadcast" onsubmit={`return confirm('${subs} obunachiga xabar yuborilsinmi?')`}>
+        <label class="caps" style="display:block; margin-bottom:8px;">Xabar matni</label>
+        <textarea name="text" required maxlength="4000" rows="10" placeholder="Assalomu alaykum! Ertaga AI FEST 2026..." style="width:100%; background:#0e0e0e; border:1px solid #262626; color:#e2e2e2; font-family:'JetBrains Mono',monospace; font-size:14px; line-height:1.6; padding:14px; resize:vertical;"></textarea>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:16px;">
+          <span class="caps" style="color:#555;">{fmt(subs)} obunachiga boradi</span>
+          <button type="submit" class="btn btn-primary" disabled={subs === 0}>Yuborish →</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="padding:24px; align-self:start;">
+      <div class="caps" style="color:#A1A1A1; margin-bottom:14px;">Bot obunachilari</div>
+      <div class="adm-h" style="font-size:48px; font-weight:800; letter-spacing:-0.04em; line-height:1; color:#fff;">{fmt(subs)}</div>
+      <div class="caps" style="color:#555; margin-top:8px;">start bosgan · faol</div>
+      <p style="color:#808080; font-size:12px; line-height:1.5; margin-top:18px;">Bot bilan muloqot qilgan har bir odam shu yerga qo‘shiladi. Soni vaqt o‘tib o‘sadi.</p>
+    </div>
+  </div>
+  <style>@media (max-width:860px){ .adm-grid2{ grid-template-columns:1fr !important; } }</style>
+</AdminLayout>

@@ -1,0 +1,101 @@
+---
+interface Props { title: string; active: string; }
+const { title, active } = Astro.props;
+const nav = [
+  { key: 'dashboard', label: 'Dashboard', href: '/admin', icon: 'M3 3h7v7H3zM14 3h7v4h-7zM14 10h7v11h-7zM3 14h7v7H3z' },
+  { key: 'payments', label: 'Payments', href: '/admin/payments', icon: 'M2 6h20v12H2zM2 10h20' },
+  { key: 'users', label: 'Users', href: '/admin/users', icon: 'M16 21v-2a4 4 0 0 0-8 0v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+  { key: 'speakers', label: 'Speakers', href: '/admin/speakers', icon: 'M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' },
+  { key: 'promo', label: 'Promo Codes', href: '/admin/promo', icon: 'M3 8l9-5 9 5v8l-9 5-9-5zM12 3v18' },
+  { key: 'randomayzer', label: 'Randomayzer', href: '/admin/randomayzer', icon: 'M4 4l16 16M20 4L4 20' },
+  { key: 'broadcast', label: 'Broadcast', href: '/admin/broadcast', icon: 'M22 2L11 13M22 2l-7 20-4-9-9-4z' },
+  { key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 2h-5l-.3 2.5a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L3.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1L9.5 22h5l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z' },
+];
+---
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-aifest.svg" />
+    <title>{title} — AI FEST Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style is:global>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: #0e0e0e; color: #e2e2e2; font-family: 'JetBrains Mono', monospace; -webkit-font-smoothing: antialiased; }
+      .adm-h { font-family: 'Hanken Grotesk', 'Inter', sans-serif; }
+      .caps { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+      a { color: inherit; text-decoration: none; }
+      .nav-link { display:flex; align-items:center; gap:12px; padding:10px 14px; color:#A1A1A1; font-size:13px; transition:all .15s; border-left:2px solid transparent; }
+      .nav-link:hover { color:#fff; background:#1a1a1a; }
+      .nav-link.active { color:#fff; background:#1a1a1a; border-left-color:#fff; }
+      .card { border:1px solid #262626; background:#0e0e0e; }
+      table { border-collapse: collapse; width: 100%; }
+      th { text-align:left; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#A1A1A1; padding:12px 16px; border-bottom:1px solid #262626; }
+      td { font-size:13px; padding:14px 16px; border-bottom:1px solid #1b1b1b; color:#e2e2e2; }
+      tr:hover td { background:#151515; }
+      .badge { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:3px 8px; border:1px solid; }
+      .badge-paid { border-color:#fff; color:#fff; background:rgba(255,255,255,.1); }
+      .badge-pending { border-color:#404040; color:#808080; }
+      .badge-failed { border-color:#FF3B30; color:#FF3B30; }
+      .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:12px 20px; cursor:pointer; border:1px solid #fff; transition:all .15s; }
+      .btn-primary { background:#fff; color:#0e0e0e; } .btn-primary:hover { background:#c6c6c7; }
+      .btn-ghost { background:transparent; color:#fff; } .btn-ghost:hover { background:#1a1a1a; }
+      input, select { background:#0e0e0e; border:1px solid #262626; color:#e2e2e2; font-family:'JetBrains Mono',monospace; font-size:14px; padding:10px 12px; width:100%; }
+      input:focus, select:focus { outline:none; border-color:#fff; }
+      ::placeholder { color:#555; }
+    </style>
+  </head>
+  <body>
+    <div style="display:flex; min-height:100vh;">
+      <!-- Sidebar -->
+      <aside style="width:240px; flex-shrink:0; border-right:1px solid #262626; background:#0b0b0b; display:flex; flex-direction:column; position:sticky; top:0; height:100vh;" class="adm-sidebar">
+        <div style="padding:22px 20px; border-bottom:1px solid #262626;">
+          <div class="adm-h" style="font-weight:800; font-size:16px; letter-spacing:-0.02em; color:#ffcc00;">AI FEST '26</div>
+          <div class="caps" style="color:#A1A1A1; margin-top:4px;">Admin Terminal</div>
+        </div>
+        <nav style="padding:14px 8px; flex:1;">
+          {nav.map((n) => (
+            <a href={n.href} class:list={['nav-link', active === n.key && 'active']}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={n.icon} /></svg>
+              <span>{n.label}</span>
+            </a>
+          ))}
+        </nav>
+        <div style="padding:16px 20px; border-top:1px solid #262626; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:12px; color:#fff;">Admin_01</div>
+            <div class="caps" style="color:#555; font-size:9px;">System Root</div>
+          </div>
+          <form method="POST" action="/api/admin/logout" style="margin:0;">
+            <button class="caps" style="background:none; border:1px solid #262626; color:#A1A1A1; padding:6px 10px; cursor:pointer; font-family:'JetBrains Mono',monospace;" title="Chiqish">EXIT</button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main style="flex:1; min-width:0;">
+        <header style="border-bottom:1px solid #262626; padding:18px 32px; display:flex; align-items:center; justify-content:space-between;">
+          <div class="caps" style="color:#A1A1A1;">{title}</div>
+          <a href="/" target="_blank" class="caps" style="color:#555;">← Sayt</a>
+        </header>
+        <div style="padding:32px;">
+          <slot />
+        </div>
+      </main>
+    </div>
+    <style>
+      @media (max-width: 860px) {
+        .adm-sidebar { position:fixed !important; left:0; bottom:0; top:auto !important; height:auto !important; width:100% !important; flex-direction:row !important; border-right:none; border-top:1px solid #262626; z-index:50; overflow-x:auto; }
+        .adm-sidebar > div:first-child, .adm-sidebar > div:last-child { display:none; }
+        .adm-sidebar nav { display:flex; padding:6px; }
+        main { padding-bottom:70px; }
+      }
+    </style>
+  </body>
+</html>

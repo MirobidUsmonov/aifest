@@ -1,0 +1,13 @@
+---
+interface Props {
+  size?: 'xs' | 'sm' | 'base';
+  muted?: boolean;
+  className?: string;
+}
+const { size = 'sm', muted = false, className = '' } = Astro.props;
+const sizeCls = { xs: 'text-[10px]', sm: 'text-[11px]', base: 'text-xs' }[size];
+const colorCls = muted ? 'text-ink-3' : 'text-ink-2';
+---
+<span class:list={['font-mono uppercase tracking-[0.18em]', sizeCls, colorCls, className]}>
+  <slot />
+</span>

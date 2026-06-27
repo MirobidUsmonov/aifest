@@ -1,0 +1,98 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { listSpeakers, getSpeaker } from '../../lib/store';
+
+const url = Astro.url;
+const editId = url.searchParams.get('edit') ?? '';
+const ok = url.searchParams.get('ok');
+const err = url.searchParams.get('e');
+const editing = editId ? getSpeaker(editId) : undefined;
+const speakers = listSpeakers();
+const errMsg: Record<string, string> = {
+  name: 'Ism familiya majburiy.',
+  type: 'Rasm formati: JPG, PNG, WEBP yoki GIF.',
+  size: 'Rasm hajmi 10 MB dan oshmasin.',
+};
+const photoUrl = (s: { id: string; photo?: string }) => `/api/speaker-photo?id=${s.id}&v=${encodeURIComponent(s.photo ?? '')}`;
+---
+<AdminLayout title="Speakers" active="speakers">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Spikerlar</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 24px;">Saytdagi <b style="color:#fff;">Spikerlar</b> bo‘limini boshqaring — qo‘shing, tahrirlang yoki o‘chiring. Har birida ism, rasm va qisqacha ma’lumot.</p>
+
+  {ok && <div style="border:1px solid #2e7d32; background:rgba(46,125,50,.12); color:#9fd8a2; padding:10px 14px; margin-bottom:18px; font-size:13px;">Saqlandi ✓</div>}
+  {err && errMsg[err] && <div style="border:1px solid #FF3B30; background:rgba(255,59,48,.1); color:#ff8b84; padding:10px 14px; margin-bottom:18px; font-size:13px;">{errMsg[err]}</div>}
+
+  <div style="display:grid; grid-template-columns:340px 1fr; gap:24px;" class="adm-grid-spk">
+    <!-- create / edit -->
+    <div class="card" style="padding:24px; align-self:start;">
+      <div class="caps" style="margin-bottom:18px;">{editing ? 'Spikerni tahrirlash' : 'Yangi spiker'}</div>
+      <form method="POST" action="/api/admin/speaker" enctype="multipart/form-data">
+        <input type="hidden" name="id" value={editing?.id ?? ''} />
+
+        <label class="caps" style="display:block; margin-bottom:6px;">Ism familiya *</label>
+        <input type="text" name="name" required maxlength="80" value={editing?.name ?? ''} placeholder="Aziz Karimov" style="margin-bottom:14px;" />
+
+        <label class="caps" style="display:block; margin-bottom:6px;">Lavozim / kompaniya</label>
+        <input type="text" name="role" maxlength="100" value={editing?.role ?? ''} placeholder="CEO, Uzum Market" style="margin-bottom:14px;" />
+
+        <label class="caps" style="display:block; margin-bottom:6px;">Qisqacha ma’lumot</label>
+        <textarea name="bio" maxlength="600" rows="4" placeholder="Spiker haqida 1–2 jumla…" style="background:#0e0e0e; border:1px solid #262626; color:#e2e2e2; font-family:'JetBrains Mono',monospace; font-size:14px; padding:10px 12px; width:100%; resize:vertical; margin-bottom:14px;">{editing?.bio ?? ''}</textarea>
+
+        <label class="caps" style="display:block; margin-bottom:6px;">Rasm {editing && '(yangi tanlamasangiz, eski qoladi)'}</label>
+        {editing?.photo && (
+          <img src={photoUrl(editing)} alt={editing.name} style="width:84px; height:104px; object-fit:cover; border:1px solid #262626; margin-bottom:10px; display:block;" />
+        )}
+        <input type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/gif" style="margin-bottom:20px; padding:8px;" />
+
+        <button type="submit" class="btn btn-primary" style="width:100%;">{editing ? 'Saqlash →' : 'Spiker qo‘shish →'}</button>
+        {editing && <a href="/admin/speakers" class="btn btn-ghost" style="width:100%; margin-top:10px;">Bekor qilish</a>}
+      </form>
+    </div>
+
+    <!-- list -->
+    <div>
+      {speakers.length === 0 ? (
+        <div class="card" style="padding:48px; text-align:center; color:#555; font-size:14px;">Hozircha spiker yo‘q. Chapdagi forma orqali qo‘shing.</div>
+      ) : (
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px;">
+          {speakers.map((s, i) => (
+            <div class="card" style="display:flex; flex-direction:column;">
+              <div style="aspect-ratio:4/5; overflow:hidden; border-bottom:1px solid #262626; background:#161616;">
+                {s.photo ? (
+                  <img src={photoUrl(s)} alt={s.name} style="width:100%; height:100%; object-fit:cover;" />
+                ) : (
+                  <div style="width:100%; height:100%; display:grid; place-items:center; color:#3a3a3a; font-size:48px; font-weight:800; font-family:'Hanken Grotesk',sans-serif;">{s.name.slice(0, 1).toUpperCase()}</div>
+                )}
+              </div>
+              <div style="padding:14px; flex:1;">
+                <div style="color:#fff; font-weight:700; font-size:14px;">{s.name}</div>
+                {s.role && <div style="color:#A1A1A1; font-size:11px; margin-top:2px;">{s.role}</div>}
+                {s.bio && <p style="color:#808080; font-size:12px; line-height:1.5; margin:8px 0 0;">{s.bio}</p>}
+              </div>
+              <div style="display:flex; gap:6px; padding:0 14px 14px; align-items:stretch;">
+                <form method="POST" action="/api/admin/speaker" style="margin:0;">
+                  <input type="hidden" name="action" value="up" />
+                  <input type="hidden" name="id" value={s.id} />
+                  <button class="caps" title="Yuqoriga" disabled={i === 0} style={`height:100%; background:none; border:1px solid #262626; color:#fff; padding:6px 10px; cursor:pointer; font-family:'JetBrains Mono',monospace; opacity:${i === 0 ? 0.3 : 1};`}>↑</button>
+                </form>
+                <form method="POST" action="/api/admin/speaker" style="margin:0;">
+                  <input type="hidden" name="action" value="down" />
+                  <input type="hidden" name="id" value={s.id} />
+                  <button class="caps" title="Pastga" disabled={i === speakers.length - 1} style={`height:100%; background:none; border:1px solid #262626; color:#fff; padding:6px 10px; cursor:pointer; font-family:'JetBrains Mono',monospace; opacity:${i === speakers.length - 1 ? 0.3 : 1};`}>↓</button>
+                </form>
+                <a href={`/admin/speakers?edit=${s.id}`} class="caps" style="flex:1; display:flex; align-items:center; justify-content:center; border:1px solid #262626; color:#fff; padding:6px 8px;">Tahrir</a>
+                <form method="POST" action="/api/admin/speaker" style="margin:0;" onsubmit="return confirm('O‘chirilsinmi?')">
+                  <input type="hidden" name="action" value="delete" />
+                  <input type="hidden" name="id" value={s.id} />
+                  <button class="caps" title="O‘chirish" style="height:100%; background:none; border:1px solid #FF3B30; color:#FF3B30; padding:6px 10px; cursor:pointer; font-family:'JetBrains Mono',monospace;">✕</button>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+  <style>@media (max-width:860px){ .adm-grid-spk{ grid-template-columns:1fr !important; } }</style>
+</AdminLayout>

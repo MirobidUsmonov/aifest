@@ -1,0 +1,19 @@
+{
+  "general": [{ "name": "Uzum Market", "logo": "/images/partners/uzum-real.png" }],
+  "key": [
+    { "name": "Wildberries", "logo": "/images/partners/wildberries-real.png" },
+    { "name": "Freedom Pay", "logo": "/images/partners/freedom-pay-white.png" }
+  ],
+  "service": [
+    { "name": "MoySklad", "logo": "/images/partners/moysklad-real.png" },
+    { "name": "Chernogolovka", "logo": "/images/partners/chernogolovka-real.svg", "wide": true }
+  ],
+  "additional": [],
+  "organizers": [
+    { "name": "IT Park Uzbekistan", "logo": "/images/tilda/org-1.png" },
+    { "name": "AI FABRIKA", "logo": "/images/tilda/org-2.png" },
+    { "name": "Digital Hub", "logo": "/images/tilda/org-3.png" },
+    { "name": "Biznes Fabrika", "logo": "/images/partners/biznes-fabrika.png" },
+    { "name": "AI Academy", "logo": "/images/partners/sellerplus.svg" }
+  ]
+}

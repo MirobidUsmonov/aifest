@@ -1,0 +1,46 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { listOrders } from '../../lib/store';
+
+type U = { name: string; phone: string; contact?: string; orders: number; paid: number; tickets: number; spent: number; last: string };
+const map = new Map<string, U>();
+for (const o of listOrders()) {
+  const u = map.get(o.buyer_phone) ?? { name: o.buyer_name, phone: o.buyer_phone, contact: o.contact, orders: 0, paid: 0, tickets: 0, spent: 0, last: o.created_at };
+  u.orders += 1;
+  if (o.status === 'paid') { u.paid += 1; u.tickets += o.tickets?.length || o.quantity; u.spent += o.amount; }
+  if (o.created_at > u.last) { u.last = o.created_at; u.name = o.buyer_name; }
+  if (o.contact && !u.contact) u.contact = o.contact;
+  map.set(o.buyer_phone, u);
+}
+const users = [...map.values()].sort((a, b) => b.spent - a.spent || (a.last < b.last ? 1 : -1));
+const fmt = (n: number) => new Intl.NumberFormat('uz-UZ').format(n);
+const dt = (s: string) => new Date(s).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: '2-digit' });
+---
+<AdminLayout title="Users" active="users">
+  <h1 class="adm-h" style="font-size:40px; font-weight:800; letter-spacing:-0.04em; margin:0 0 6px; color:#fff;">Foydalanuvchilar</h1>
+  <p style="color:#A1A1A1; font-size:14px; margin:0 0 28px;">{fmt(users.length)} ta noyob xaridor (telefon bo‘yicha).</p>
+
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>Xaridor</th><th>Telefon</th><th>Aloqa</th><th>Buyurtma</th><th>To‘langan</th><th>Chipta</th><th>Sarflagan</th><th>Oxirgi</th></tr>
+      </thead>
+      <tbody>
+        {users.length === 0 && (<tr><td colspan="8" style="text-align:center; color:#555; padding:40px;">Hozircha xaridor yo‘q.</td></tr>)}
+        {users.map((u) => (
+          <tr>
+            <td style="color:#fff;">{u.name}</td>
+            <td>{u.phone}</td>
+            <td style="color:#A1A1A1;">{u.contact ?? '—'}</td>
+            <td>{u.orders}</td>
+            <td>{u.paid}</td>
+            <td>{u.tickets}</td>
+            <td style="color:#fff;">{fmt(u.spent)} so‘m</td>
+            <td style="color:#A1A1A1;">{dt(u.last)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>

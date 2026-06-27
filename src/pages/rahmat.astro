@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/astro/Header.astro';
+import Footer from '../components/astro/Footer.astro';
+import MonoLabel from '../components/astro/MonoLabel.astro';
+const botUser = import.meta.env.TELEGRAM_BOT_USERNAME ?? 'aifestuz_bot';
+---
+<BaseLayout title="Rahmat — AI FEST 2026" description="To'lov holati va chiptangiz.">
+  <Header />
+  <main class="bg-bg text-ink min-h-screen">
+    <section class="max-w-[900px] mx-auto px-6 lg:px-12 pt-32 pb-24 md:pt-40">
+      <MonoLabel size="sm" muted={true}>AI FEST '26 · CHIPTA</MonoLabel>
+      <h1 class="mt-6 font-display font-black text-4xl md:text-6xl leading-[0.95] tracking-tightest uppercase">Rahmat!</h1>
+
+      <div id="state" class="mt-10 border border-rule p-8 md:p-10">
+        <div id="loading">
+          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-4">STATUS / TEKSHIRILMOQDA</div>
+          <p class="text-ink">To'lov holati tekshirilmoqda… <span id="dots">·</span></p>
+          <p class="text-ink-3 text-sm mt-3">Bu bir necha soniya olishi mumkin. Sahifani yopmang.</p>
+        </div>
+
+        <div id="paid" class="hidden">
+          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-4">STATUS / TO'LANDI ✓</div>
+          <p class="text-ink mb-2">Chiptangiz tayyor. Quyidan yuklab oling:</p>
+          <p class="text-ink-3 text-sm mb-6">Buyurtma raqami: <span id="ordernum" class="text-ink font-semibold tabular"></span> — eslab qoling.</p>
+          <ul id="tickets" class="space-y-3"></ul>
+          <p class="text-ink-3 text-sm mt-6">Chiptani telefoningizga saqlab qo'ying — kirishda QR skanerlanadi. Keyinroq <a href="/bilet" class="underline hover:text-ink">Chiptani topish</a> sahifasidan ham topasiz.</p>
+        </div>
+
+        <div id="pending" class="hidden">
+          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-4">STATUS / KUTILMOQDA</div>
+          <p class="text-ink">To'lov hali tasdiqlanmadi. Agar to'lovni yakunlagan bo'lsangiz, bir oz kuting yoki tugmani bosing.</p>
+          <button id="recheck" class="mt-6 bg-ink text-bg px-8 py-3 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-ink-2 transition">Qayta tekshirish →</button>
+        </div>
+
+        <div id="error" class="hidden">
+          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-4">STATUS / XATO</div>
+          <p id="errmsg" class="text-ink">Buyurtma topilmadi.</p>
+          <a href="/#register" class="inline-block mt-6 border border-rule px-8 py-3 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:border-ink transition">Bosh sahifaga →</a>
+        </div>
+      </div>
+
+      <div id="tg-block" class="mt-6 border border-ink/40 bg-ink/[0.04] p-6 md:p-8">
+        <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 mb-3">CHIPTANGIZNI YO'QOTMANG</div>
+        <p class="text-ink-2 text-sm leading-relaxed mb-1">Buyurtma raqami: <span id="ordernum2" class="text-ink font-semibold tabular">—</span></p>
+        <p class="text-ink-3 text-sm leading-relaxed mb-5">Chiptangizni istalgan vaqt Telegram botimizdan oling — QR-PDF darhol keladi. Buyurtma raqamingizni eslab qoling.</p>
+        <a id="tg-btn" data-bot={botUser} href="#" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 bg-ink text-bg px-8 py-4 font-mono font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-ink-2 transition">
+          Telegram botdan chiptani olish →
+        </a>
+      </div>
+
+      <a href="/" class="inline-block mt-10 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2 hover:text-ink transition">← AI FEST bosh sahifa</a>
+    </section>
+  </main>
+  <Footer />
+
+  <script is:inline>
+    (function () {
+      const qs = new URLSearchParams(location.search);
+      let order = qs.get('order');
+      if (!order) { try { order = localStorage.getItem('ecf_last_order'); } catch (e) {} }
+      const show = (id) => {
+        ['loading','paid','pending','error'].forEach((k) => {
+          document.getElementById(k).classList.toggle('hidden', k !== id);
+        });
+      };
+      if (!order) {
+        document.getElementById('errmsg').textContent = "Buyurtma raqami ko'rsatilmagan.";
+        var tb0 = document.getElementById('tg-block'); if (tb0) tb0.classList.add('hidden');
+        show('error'); return;
+      }
+      // always-on Telegram CTA + order number so the buyer never loses their ticket
+      var tgBtn = document.getElementById('tg-btn');
+      if (tgBtn) tgBtn.href = 'https://t.me/' + (tgBtn.dataset.bot || 'aifestuz_bot') + '?start=order_' + encodeURIComponent(order);
+      var on2 = document.getElementById('ordernum2'); if (on2) on2.textContent = order;
+
+      let tries = 0;
+      const maxTries = 20;
+      async function check() {
+        tries++;
+        try {
+          const r = await fetch('/api/order-status?order=' + encodeURIComponent(order), { cache: 'no-store' });
+          const d = await r.json();
+          if (!d.ok) {
+            if (r.status === 404) { document.getElementById('errmsg').textContent = 'Buyurtma topilmadi.'; show('error'); return; }
+            throw new Error(d.error || 'err');
+          }
+          if (d.status === 'paid' && d.tickets && d.tickets.length) {
+            const on = document.getElementById('ordernum');
+            if (on) on.textContent = d.order_number || order;
+            const ul = document.getElementById('tickets');
+            ul.innerHTML = '';
+            d.tickets.forEach((t, i) => {
+              const li = document.createElement('li');
+              li.className = 'flex items-center justify-between gap-4 border border-rule px-5 py-4';
+              li.innerHTML =
+                '<span class="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-2">CHIPTA ' + String(i+1).padStart(2,'0') + ' · ' + (t.holder || '') + '</span>' +
+                '<a class="bg-ink text-bg px-5 py-2 font-mono font-semibold text-[10px] uppercase tracking-[0.18em] hover:bg-ink-2 transition" target="_blank" rel="noopener" href="/api/ticket-pdf?n=' + encodeURIComponent(t.ticket_number) + '">PDF ⬇</a>';
+              ul.appendChild(li);
+            });
+            show('paid');
+            return;
+          }
+          if (tries >= maxTries) { show('pending'); return; }
+          setTimeout(check, 3000);
+        } catch (e) {
+          if (tries >= maxTries) { show('pending'); return; }
+          setTimeout(check, 3000);
+        }
+      }
+      document.getElementById('recheck').addEventListener('click', () => { tries = 0; show('loading'); check(); });
+      check();
+    })();
+  </script>
+</BaseLayout>
